@@ -36,35 +36,31 @@ class _Engine(object):
 	def __init__(self,connect):
 		self._connect = connect
 	def connect(self):
-		return self._connect
+		return self._connect()
 
 class _LasyConnection(object):
-	"""
-		 惰性连接对象
-		 仅当需要cursor对象时，才连接数据库，获取连接
-	"""
-	def __init__(self):
-		self.connection = None
+    def __init__(self):
+        self.connection = None
 
-	def cursor(self):
-		if self.connection is None:
-			_connection = engine.connect()
-			logging.info('open connection <%s>...' % hex(id(connection)))
-			self.connection = _connection
-		return self.connection.cursor()
+    def cursor(self):
+        if self.connection is None:
+            connection = engine.connect()
+            logging.info('open connection <%s>...' % hex(id(connection)))
+            self.connection = connection
+        return self.connection.cursor()
 
-	def commit(self):
-		self.connection.commit()
+    def commit(self):
+        self.connection.commit()
 
-	def rollback(self):
-		self.connection.rollback()
+    def rollback(self):
+        self.connection.rollback()
 
-	def cleanup(self):
-		if self.connection:
-			_connection = self.connection
-			self.connection = None
-			logging.info('close connection <%s>...' % hex(id(connection)))
-			_connection.close()
+    def cleanup(self):
+        if  self.connection:
+            connection = self.connection
+            self.connection = None
+            logging.info('close connection <%s>...' % hex(id(connection)))
+            connection.close()
 
 def create_engine(user,password,database,host='127.0.0.1',port=3306,**kw):
 	'''
@@ -75,13 +71,13 @@ def create_engine(user,password,database,host='127.0.0.1',port=3306,**kw):
 	global engine
 	if engine is not None:
 		raise DBError('Engine is already initialized.')
-	params = dict(uesr=user,password=password,database=database,host=host,port = port)
-	defaults = dict(use_unicode=True,charset='utf8',collation='utf8_genrtal_ci',autocommit=False)
+	params = dict(user=user, password=password, database=database, host=host, port=port)
+	defaults = dict(use_unicode=True, charset='utf8', collation='utf8_general_ci', autocommit=False)
 	for k,v in defaults.iteritems():
 		params[k] = kw.pop(k,v)
 	params.update(kw)
 	params['buffered'] = True
-	engine = _Engine(lambda:mysql.connector.connect(**params))
+	engine = _Engine(lambda: mysql.connector.connect(**params))
 	#test connection
 	logging.info('Init mysql engine <%s> ok.' % hex(id(engine)))
 
@@ -416,7 +412,7 @@ def _update(sql, *args):
 		r = cursor.rowcount
 		if _db_ctx.transactions == 0:
 			# no transaction enviroment:
-			ogging.info('auto commit')
+			logging.info('auto commit')
 			_db_ctx.connection.commit()
 		return r
 	finally:
@@ -467,7 +463,7 @@ def insert(table, **kw):
 
 if __name__ == '__main__':
 	logging.basicConfig(level=logging.DEBUG)
-	create_engine('www-data', 'www-data', 'test', '192.168.10.128')
+	create_engine('root','hadoop', 'hadoop', '192.168.28.131')
 	update('drop table if exists user')
 	update('create table user (id int primary key, name text, email text, passwd text, last_modified real)')
 	import doctest
